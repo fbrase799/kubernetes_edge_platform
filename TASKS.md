@@ -1,0 +1,17 @@
+# TASKS
+
+Implement [PRD.md](PRD.md) in this order. Each task is done only when its acceptance line is true. Leave the cluster running between tasks. Do not commit unless asked.
+
+Task-1: Add the Docker toolchain and the cluster environment. Create `docker/` with a toolchain image and Compose file that mount this repository and the host Docker socket and provide k3d, kubectl, and Helm. Add `infra/cluster/k3d.yaml` for one k3s server and two agents, with host ports `127.0.0.1:30080` (Grafana) and `127.0.0.1:8080` (gateway). Add scripts that run `k3d cluster create --config` and `k3d cluster delete` from the toolchain container and write a gitignored kubeconfig. Do not add OpenTofu or Terraform. Acceptance: from the toolchain container, create yields 3 Ready nodes, and delete removes them.
+
+Task-2: Add the Open Gateway submodule and its manifests. Pin `external/open-gateway` to commit `1e92a1a`. From the toolchain, build `docker/Dockerfile.gateway` from that tree and import the image into the k3d cluster. Add `deploy/manifests/` for namespace `edge`, a one-replica Deployment, probes on `/api/v1/health`, and a ClusterIP Service, using the cloud profile so the temperature simulator runs and the admin listener stays off. Acceptance: the gateway Pod is Ready, and `http://127.0.0.1:8080/api/v1/telemetry/current` returns the simulator reading.
+
+Task-7: Show the Qt display inside the cluster. Build `external/open-gateway/docker/Dockerfile.display`, import it, and deploy one replica with `OGW_UI=novnc` and `OGW_API` set to the gateway Service. Do not mount the host X11 or Wayland socket. Publish the noVNC port as `127.0.0.1:6080` from `infra/cluster/k3d.yaml`. Acceptance: `http://127.0.0.1:6080/vnc.html?autoconnect=1&resize=scale` shows the 1280×720 Qt window, and deleting the display Pod leaves the gateway Pod running.
+
+Task-3: Install InfluxDB OSS 2.x with the upstream Helm chart into namespace `edge`, backed by a PersistentVolumeClaim, with a committed demo organization, bucket, and token. Acceptance: the InfluxDB Pod is Ready, the volume is bound, and the bucket accepts a write.
+
+Task-4: Add `services/telemetry-bridge`, a Python image that polls `GET /api/v1/telemetry/current` and writes numeric readings to the InfluxDB `sensor` measurement (tags: device id and capability id, field: `value`). Install it with `deploy/helm/telemetry-bridge/` at one replica. A failed poll is logged and retried on the next interval. Acceptance: after Helm install, the bucket contains `sensor` points written by the bridge.
+
+Task-5: Install Grafana with the upstream Helm chart into namespace `edge`. Expose it at `http://127.0.0.1:30080` with the committed demo admin password. Provision the InfluxDB datasource and one dashboard of the `sensor` series from the chart, not by hand in the UI. Acceptance: the browser shows Grafana, the datasource is healthy, and the dashboard plots the simulator series.
+
+Task-6: Add the drills under `scripts/` and a README that runs them inside the toolchain container. Cover InfluxDB Pod delete with measurements still queryable (FR-07), gateway Pod delete and recovery (FR-08), gateway scale from 1 to 2 and back to 1 (FR-09), and a gateway rolling update with `maxUnavailable: 0` (FR-10). Acceptance: each script finishes as the matching requirement describes, and the README is enough to repeat the demo from an empty Docker machine.
