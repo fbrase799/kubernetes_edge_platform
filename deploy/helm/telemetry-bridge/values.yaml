@@ -1,0 +1,11 @@
+replicaCount: 1
+image: docker.io/library/edge-telemetry-bridge:local
+imagePullPolicy: Never
+gatewayUrl: http://open-gateway.edge.svc.cluster.local:8080
+influxUrl: http://influxdb.edge.svc.cluster.local:80
+secretName: edge-demo
+pollIntervalSeconds: "5"
+resources:
+  requests:
+    cpu: 20m
+    memory: 32Mi

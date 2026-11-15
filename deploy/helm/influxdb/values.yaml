@@ -1,0 +1,17 @@
+fullnameOverride: influxdb
+adminUser:
+  organization: edge
+  bucket: sensors
+  user: admin
+  retention_policy: 0s
+  existingSecret: edge-demo
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 1Gi
+pdb:
+  create: false
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi

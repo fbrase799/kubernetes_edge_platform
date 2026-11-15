@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemetry-bridge
+  labels:
+    app: telemetry-bridge
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: telemetry-bridge
+  template:
+    metadata:
+      labels:
+        app: telemetry-bridge
+    spec:
+      containers:
+        - name: telemetry-bridge
+          image: {{ .Values.image | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          env:
+            - name: GATEWAY_URL
+              value: {{ .Values.gatewayUrl | quote }}
+            - name: INFLUX_URL
+              value: {{ .Values.influxUrl | quote }}
+            - name: POLL_INTERVAL_SECONDS
+              value: {{ .Values.pollIntervalSeconds | quote }}
+            - name: INFLUX_ORG
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: influx-org
+            - name: INFLUX_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: influx-bucket
+            - name: INFLUX_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: influx-token
+          resources:
+{{ toYaml .Values.resources | indent 12 }}

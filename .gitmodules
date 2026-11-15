@@ -1,0 +1,3 @@
+[submodule "external/open-gateway"]
+	path = external/open-gateway
+	url = /Users/frank/development/github/open_gateway

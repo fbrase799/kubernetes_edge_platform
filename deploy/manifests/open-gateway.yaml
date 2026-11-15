@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-gateway
+  namespace: edge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-gateway
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: open-gateway
+    spec:
+      containers:
+        - name: open-gateway
+          image: docker.io/library/edge-gateway:local
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            # The cloud profile is the temperature simulator with the admin listener off.
+            # The image's local profile forces the admin listener on.
+            - name: OGW_PROFILE
+              value: cloud
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+            periodSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-gateway
+  namespace: edge
+spec:
+  type: ClusterIP
+  selector:
+    app: open-gateway
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-gateway-host
+  namespace: edge
+spec:
+  type: NodePort
+  selector:
+    app: open-gateway
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      nodePort: 30081

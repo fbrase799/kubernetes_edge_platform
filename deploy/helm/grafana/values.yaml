@@ -1,0 +1,49 @@
+fullnameOverride: grafana
+adminUser: admin
+adminPassword: edge-demo-password
+service:
+  type: NodePort
+  port: 80
+  targetPort: 3000
+  nodePort: 30080
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+grafana.ini:
+  analytics:
+    check_for_updates: false
+    reporting_enabled: false
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: InfluxDB
+        uid: influxdb
+        type: influxdb
+        access: proxy
+        url: http://influxdb.edge.svc.cluster.local:80
+        isDefault: true
+        jsonData:
+          version: Flux
+          organization: edge
+          defaultBucket: sensors
+        secureJsonData:
+          token: edge-demo-token
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: default
+        orgId: 1
+        folder: Edge
+        type: file
+        disableDeletion: false
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/default
+dashboards:
+  default:
+    sensors:
+      json: |
+        {"annotations":{"list":[]},"editable":false,"graphTooltip":1,"panels":[{"datasource":{"type":"influxdb","uid":"influxdb"},"fieldConfig":{"defaults":{"unit":"short","custom":{"drawStyle":"line","showPoints":"always"}},"overrides":[]},"gridPos":{"h":12,"w":24,"x":0,"y":0},"id":1,"options":{"legend":{"displayMode":"table","placement":"bottom","showLegend":true,"calcs":[]},"tooltip":{"mode":"multi","sort":"desc"}},"targets":[{"datasource":{"type":"influxdb","uid":"influxdb"},"query":"from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"sensor\" and r._field == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)","refId":"A"}],"title":"Sensor values","type":"timeseries"}],"refresh":"5s","schemaVersion":39,"tags":["edge"],"templating":{"list":[]},"time":{"from":"now-15m","to":"now"},"timezone":"browser","title":"Edge sensors","uid":"edge-sensors","version":1}

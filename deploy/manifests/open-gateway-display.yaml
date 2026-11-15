@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-gateway-display
+  namespace: edge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-gateway-display
+  template:
+    metadata:
+      labels:
+        app: open-gateway-display
+    spec:
+      containers:
+        - name: display
+          image: docker.io/library/edge-display:local
+          imagePullPolicy: Never
+          ports:
+            - name: novnc
+              containerPort: 6080
+          env:
+            - name: OGW_UI
+              value: novnc
+            - name: OGW_API
+              value: http://open-gateway.edge.svc.cluster.local:8080
+          readinessProbe:
+            httpGet:
+              path: /vnc.html
+              port: novnc
+            periodSeconds: 5
+            failureThreshold: 24
+          livenessProbe:
+            httpGet:
+              path: /vnc.html
+              port: novnc
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-gateway-display
+  namespace: edge
+spec:
+  type: NodePort
+  selector:
+    app: open-gateway-display
+  ports:
+    - name: novnc
+      port: 6080
+      targetPort: novnc
+      nodePort: 30082
