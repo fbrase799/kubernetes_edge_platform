@@ -8,13 +8,20 @@ kubectl -n edge rollout status deployment/open-gateway --timeout=180s
 
 health_url="http://${HOST_GATEWAY}:8080/api/v1/health"
 telemetry_url="http://${HOST_GATEWAY}:8080/api/v1/telemetry/current"
+health=""
+telemetry=""
 for _ in $(seq 1 30); do
-    if curl -fsS "${health_url}" >/dev/null 2>&1; then
-        break
+    if health="$(curl -fsS "${health_url}" 2>/dev/null)"; then
+        telemetry="$(curl -fsS "${telemetry_url}" 2>/dev/null || true)"
+        if grep -q '"value"' <<<"${telemetry}"; then
+            break
+        fi
     fi
     sleep 2
 done
-curl -fsS "${health_url}"
-echo
-curl -fsS "${telemetry_url}"
-echo
+printf '%s\n' "${health}"
+printf '%s\n' "${telemetry}"
+if ! grep -q '"value"' <<<"${telemetry}"; then
+    echo "gateway returned no readings" >&2
+    exit 1
+fi

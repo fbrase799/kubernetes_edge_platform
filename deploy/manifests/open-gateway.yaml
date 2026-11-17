@@ -26,10 +26,29 @@ spec:
             - name: http
               containerPort: 8080
           env:
-            # The cloud profile is the temperature simulator with the admin listener off.
-            # The image's local profile forces the admin listener on.
+            # The cloud profile leaves the admin listener off. Its simulator file
+            # stays inactive until this hook turns the temperature simulator on.
             - name: OGW_PROFILE
               value: cloud
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    i=0
+                    while [ "$i" -lt 60 ]; do
+                      if curl -fsS -o /dev/null -X PUT http://127.0.0.1:8080/api/v1/support/sources/temperature-sim \
+                        -H 'content-type: application/json' \
+                        -d '{"state":"active","settings":{}}'; then
+                        exit 0
+                      fi
+                      i=$((i + 1))
+                      sleep 1
+                    done
+                    echo "temperature simulator did not activate" >&2
+                    exit 1
           readinessProbe:
             httpGet:
               path: /api/v1/health

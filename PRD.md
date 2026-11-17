@@ -175,7 +175,7 @@ The gitignored kubeconfig is what `kubectl` and Helm use inside the toolchain co
 
 `external/open-gateway` is a git submodule of the C++ Open Gateway. The first pin is commit `1e92a1a`. When a working release tag exists, the pin moves to that tag and the submodule remains the integration method only until that replacement is done. This repository does not vendor a copy of the gateway source.
 
-The toolchain builds the gateway image from `external/open-gateway/docker/Dockerfile.gateway` and imports it into the k3d cluster. `deploy/manifests/` contains the namespace, a Deployment, a ClusterIP Service, readiness and liveness probes on `/api/v1/health`, and a resource request small enough for a laptop cluster. The admin listener stays off. The cloud profile leaves the temperature simulator running.
+The toolchain builds the gateway image from `external/open-gateway/docker/Dockerfile.gateway` and imports it into the k3d cluster. `deploy/manifests/` contains the namespace, a Deployment, a ClusterIP Service, readiness and liveness probes on `/api/v1/health`, and a resource request small enough for a laptop cluster. The admin listener stays off. The cloud profile file leaves simulators inactive. Each gateway Pod enables the temperature simulator through `PUT /api/v1/support/sources/temperature-sim` when the container starts, including after a restart, a scale-up, or a rolling update. `scripts/up.sh` creates the cluster and installs the whole stack.
 
 **Acceptance:** `kubectl apply` of the manifests brings up a Ready gateway Pod. `curl` against `http://127.0.0.1:8080/api/v1/health` returns success, and `GET /api/v1/telemetry/current` returns the simulator reading.
 

@@ -2,15 +2,15 @@
 
 Self-hosted multi-node k3s cluster for the C++ Open Gateway, InfluxDB, and Grafana. Docker is the only host dependency. `k3d`, `kubectl`, and Helm run in the toolchain container.
 
-The cluster is `infra/cluster/k3d.yaml`: one server, two agents, Grafana on `127.0.0.1:30080`, the gateway API on `127.0.0.1:8080`, and the Qt window through noVNC on `127.0.0.1:6080`. Create and delete go through that file:
+The cluster is `infra/cluster/k3d.yaml`: one server, two agents, Grafana on `127.0.0.1:30080`, the gateway API on `127.0.0.1:8080`, and the Qt window through noVNC on `127.0.0.1:6080`. One script creates that cluster and installs the stack. Delete goes through the same file:
 
 ```bash
 docker compose -f docker/compose.yaml build
-docker compose -f docker/compose.yaml run --rm toolchain scripts/cluster-up.sh
+docker compose -f docker/compose.yaml run --rm toolchain scripts/up.sh
 docker compose -f docker/compose.yaml run --rm toolchain scripts/cluster-down.sh
 ```
 
-`cluster-up.sh` is safe to run again. It does not create a second cluster.
+`up.sh` is safe to run again. It does not create a second cluster.
 
 ## Demo credentials
 
@@ -29,18 +29,9 @@ The dashboard is **Edge sensors** (`/d/edge-sensors`).
 
 ## Install
 
-Open Gateway is the git submodule `external/open-gateway`, pinned to commit `1e92a1a` until a release tag exists. The submodule URL is the local Open Gateway checkout, because that repository has no published remote yet. The cluster runs the cloud profile: the temperature simulator is on, and the admin listener is off. The image's local profile turns that listener on, so the cloud profile is the one that matches this platform.
+`scripts/up.sh` is the install. It creates the cluster, builds the images, installs the gateway, the Qt display, InfluxDB, the telemetry bridge, and Grafana, and waits until the temperature simulator is publishing.
 
-```bash
-docker compose -f docker/compose.yaml run --rm toolchain scripts/build-gateway.sh
-docker compose -f docker/compose.yaml run --rm toolchain scripts/install-gateway.sh
-docker compose -f docker/compose.yaml run --rm toolchain scripts/build-display.sh
-docker compose -f docker/compose.yaml run --rm toolchain scripts/install-display.sh
-docker compose -f docker/compose.yaml run --rm toolchain scripts/install-influxdb.sh
-docker compose -f docker/compose.yaml run --rm toolchain scripts/build-bridge.sh
-docker compose -f docker/compose.yaml run --rm toolchain scripts/install-bridge.sh
-docker compose -f docker/compose.yaml run --rm toolchain scripts/install-grafana.sh
-```
+Open Gateway is the git submodule `external/open-gateway`, pinned to commit `1e92a1a` until a release tag exists. The submodule URL is the local Open Gateway checkout, because that repository has no published remote yet. The cluster runs the cloud profile, which leaves the admin listener off. The cloud profile file leaves every simulator inactive, so each gateway Pod turns the temperature simulator on when it starts. A Pod created by a restart, a scale-up, or a rolling update does the same. The image's local profile turns the admin listener on, so the cloud profile is the one that matches this platform.
 
 From the host, `http://127.0.0.1:8080/api/v1/telemetry/current` is the simulator. Scripts inside the toolchain call the same published ports through `host.docker.internal`.
 
