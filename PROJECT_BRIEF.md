@@ -20,6 +20,7 @@ kubernetes_edge_plattform
 6. Kubernetes services and access to Grafana shall be configured
 7. InfluxDB shall preserve measurements across Pod restarts
 8. Pod recovery, scaling and rolling updates shall be demonstrated
+9. Logs from kubernetes cluster shall be visible in Grafana to verify behaviour in scenarios
 
 *Temporary*
 
