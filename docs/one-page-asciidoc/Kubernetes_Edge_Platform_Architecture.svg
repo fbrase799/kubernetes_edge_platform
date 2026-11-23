@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 390" role="img" aria-label="Four Raspberry Pi Kubernetes cluster receiving sensor input from external hardware drivers and delivering telemetry to InfluxDB and Grafana">
+<defs>
+  <marker id="arr" markerWidth="7" markerHeight="7" refX="5.6" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3.5 L0,7 z" fill="#39848a"/></marker>
+  <style>
+  text {font-family: Lato, Arial, sans-serif; fill: #1c3044;}
+  .over {font-size:13px; font-weight:800; letter-spacing:1.2px; fill:#577082}
+  .hdr {font-size:18px; font-weight:800; fill:#16384b}
+  .body {font-size:14px; font-weight:650;}
+  .mini {font-size:12px; fill:#50677c;}
+  .tiny {font-size:11px; fill:#587184;}
+  .line {stroke:#39848a; stroke-width:2.8; fill:none; marker-end:url(#arr)}
+  </style>
+</defs>
+<!-- main topology cards -->
+<rect x="2" y="2" width="238" height="328" rx="16" fill="#f8fafc" stroke="#dbe4ec" stroke-width="2"/>
+<text x="21" y="31" class="over">01  DEVICE / SENSOR LAYER</text>
+<rect x="20" y="53" width="94" height="83" rx="10" fill="#fff" stroke="#d7e3e8"/>
+<circle cx="67" cy="77" r="9" fill="#e0f2f1" stroke="#4c9ba3" stroke-width="2"/>
+<path d="M67 69 v16 M59 77 h16" stroke="#4c9ba3" stroke-width="1.7"/>
+<text x="67" y="101" class="body" text-anchor="middle">Sensor A</text>
+<text x="67" y="118" class="tiny" text-anchor="middle">Room ID</text>
+<rect x="125" y="53" width="94" height="83" rx="10" fill="#fff" stroke="#d7e3e8"/>
+<circle cx="172" cy="77" r="9" fill="#e0f2f1" stroke="#4c9ba3" stroke-width="2"/>
+<path d="M172 69 v16 M164 77 h16" stroke="#4c9ba3" stroke-width="1.7"/>
+<text x="172" y="101" class="body" text-anchor="middle">Sensor B</text>
+<text x="172" y="118" class="tiny" text-anchor="middle">New device</text>
+<path d="M67 136 V155 H120 V183 M172 136 V155 H120" stroke="#39848a" stroke-width="2.6" fill="none" marker-end="url(#arr)"/>
+<rect x="20" y="186" width="200" height="106" rx="12" fill="#edf4fa" stroke="#b8cfdd" stroke-width="1.5"/>
+<text x="120" y="213" class="over" text-anchor="middle">REPO A</text>
+<text x="120" y="240" class="hdr" text-anchor="middle">Hardware driver</text>
+<text x="120" y="262" class="mini" text-anchor="middle">Outside Kubernetes</text>
+<text x="120" y="280" class="tiny" text-anchor="middle">Physical connectivity</text>
+<!-- center Kubernetes cluster -->
+<rect x="269" y="2" width="459" height="328" rx="16" fill="#f3fbfc" stroke="#a9d5d8" stroke-width="2"/>
+<text x="289" y="30" class="over">02  SELF-HOSTED KUBERNETES CLUSTER</text>
+<text x="289" y="56" class="hdr">4 Raspberry Pis · Linux</text>
+<rect x="287" y="75" width="175" height="83" rx="10" fill="#fff" stroke="#a9c9ce"/>
+<text x="374" y="99" class="over" text-anchor="middle">RPi 1</text>
+<text x="374" y="121" class="body" text-anchor="middle">Control Plane</text>
+<text x="374" y="141" class="tiny" text-anchor="middle">Kubernetes master</text>
+<rect x="474" y="75" width="236" height="83" rx="10" fill="#fff" stroke="#a9c9ce"/>
+<text x="592" y="99" class="over" text-anchor="middle">RPi 2 · RPi 3 · RPi 4</text>
+<text x="592" y="121" class="body" text-anchor="middle">Worker Nodes</text>
+<text x="592" y="141" class="tiny" text-anchor="middle">Container workloads</text>
+<path d="M462 117 H474" stroke="#8ebbc1" stroke-width="2.3" stroke-dasharray="4 3" fill="none"/>
+<rect x="289" y="185" width="421" height="115" rx="12" fill="#e0f3f0" stroke="#8bc9c3" stroke-width="1.6"/>
+<text x="500" y="212" class="over" text-anchor="middle">REPO B  ·  KUBERNETES WORKLOAD</text>
+<rect x="322" y="223" width="355" height="61" rx="9" fill="#fff" stroke="#b7d8d4"/>
+<text x="500" y="248" class="hdr" text-anchor="middle">Containerized software driver</text>
+<text x="500" y="270" class="mini" text-anchor="middle">Sensor ingestion &amp; data forwarding</text>
+<!-- right data platform -->
+<rect x="757" y="2" width="241" height="328" rx="16" fill="#f8fafc" stroke="#dbe4ec" stroke-width="2"/>
+<text x="774" y="30" class="over">03  REPO C · DATA PLATFORM</text>
+<rect x="775" y="70" width="206" height="96" rx="12" fill="#fff" stroke="#cbdbe7" stroke-width="1.6"/>
+<ellipse cx="814" cy="109" rx="20" ry="9" fill="#daf0f2" stroke="#438e98" stroke-width="2"/>
+<path d="M794 109 V131 A20 9 0 0 0 834 131 V109" fill="#daf0f2" stroke="#438e98" stroke-width="2"/>
+<ellipse cx="814" cy="109" rx="20" ry="9" fill="none" stroke="#438e98" stroke-width="2"/>
+<text x="849" y="115" class="hdr">InfluxDB</text>
+<text x="849" y="136" class="tiny">Time-series data</text>
+<path d="M878 167 V196" class="line"/>
+<rect x="775" y="201" width="206" height="96" rx="12" fill="#fff" stroke="#cbdbe7" stroke-width="1.6"/>
+<path d="M793 257 L804 240 L816 246 L828 228" stroke="#ed9040" stroke-width="3" stroke-linecap="round" fill="none"/>
+<circle cx="828" cy="228" r="3" fill="#ed9040"/>
+<text x="849" y="245" class="hdr">Grafana</text>
+<text x="849" y="267" class="tiny">Browser dashboard</text>
+<!-- data flow arrows -->
+<path d="M220 244 H314" class="line"/>
+<path d="M677 244 H743 V120 H770" class="line"/>
+<!-- beneath diagram -->
+<rect x="2" y="343" width="996" height="44" rx="10" fill="#eaf7f4" stroke="#bde0d8"/>
+<circle cx="26" cy="365" r="9" fill="#17897d"/>
+<path d="M22 365 l3 3 l5 -7" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="48" y="371" style="font-size:15px;font-weight:700;fill:#18584f">Dynamic onboarding: new room-assigned sensors integrated without application reconfiguration</text>
+</svg>

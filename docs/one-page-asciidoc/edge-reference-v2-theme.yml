@@ -1,0 +1,87 @@
+# Standalone project-reference PDF theme. Uses only fonts bundled with Asciidoctor PDF.
+extends: default
+font:
+  catalog:
+    merge: true
+    Noto Sans:
+      normal: GEM_FONTS_DIR/notosans-regular-subset.ttf
+      bold: GEM_FONTS_DIR/notosans-bold-subset.ttf
+      italic: GEM_FONTS_DIR/notosans-italic-subset.ttf
+      bold_italic: GEM_FONTS_DIR/notosans-bold_italic-subset.ttf
+page:
+  size: A4
+  margin: [32, 43, 42, 43]
+base:
+  font-family: Noto Sans
+  font-color: '273B4A'
+  font-size: 9.1
+  line-height-length: 11.4
+  line-height: 1.19
+  text-align: left
+vertical-spacing: 5
+heading:
+  font-family: Noto Sans
+  font-color: '17384B'
+  font-style: bold
+  h2-font-size: 20.5
+  h3-font-size: 9.7
+  h3-font-color: '087F77'
+  line-height: 1.08
+  margin-top: 5.5
+  margin-bottom: 5.5
+  min-height-after: 10
+block:
+  margin-bottom: 7
+prose:
+  margin-bottom: 5
+role:
+  kicker:
+    font-family: Noto Sans
+    font-size: 8.4
+    font-color: '087F77'
+    font-style: bold
+  subline:
+    font-family: Noto Sans
+    font-size: 9.0
+    font-color: '61798A'
+table:
+  font-size: 8.6
+  cell-padding: [3.5, 7, 4, 0]
+  border-width: 0
+  grid-width: 0
+  body:
+    stripe-background-color: 'FFFFFF'
+sidebar:
+  background-color: 'F0F8F7'
+  border-color: '159A8D'
+  border-width: [0, 0, 0, 2.5]
+  padding: [7, 11, 7, 11]
+  font-family: Noto Sans
+  font-size: 8.8
+  font-color: '1E394A'
+  title:
+    font-family: Noto Sans
+    font-size: 8.7
+    font-style: bold
+    font-color: '087F77'
+    text-align: left
+image:
+  align: center
+footer:
+  height: 25
+  border-width: 0.3
+  border-color: 'DDE8EB'
+  font-family: Noto Sans
+  font-size: 7
+  font-color: '8396A4'
+  padding: [7, 0, 0, 0]
+  recto:
+    left:
+      content: 'Kubernetes  |  Linux  |  Raspberry Pi  |  InfluxDB  |  Grafana'
+    right:
+      content: 'Frank Brase'
+  verso:
+    left:
+      content: $footer-recto-left-content
+    right:
+      content: $footer-recto-right-content
