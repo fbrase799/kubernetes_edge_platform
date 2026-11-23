@@ -25,11 +25,11 @@ These values are for the local cluster only.
 | InfluxDB bucket | `sensors` |
 | InfluxDB token | `edge-demo-token` |
 
-The dashboard is **Edge sensors** (`/d/edge-sensors`).
+The sensor dashboard is **Edge sensors** (`/d/edge-sensors`). The log dashboard is **Edge logs** (`/d/edge-logs`). It opens on the `edge` namespace. The Workload filter uses the stable name (`open-gateway`, `telemetry-bridge`, `influxdb`, `grafana`, `open-gateway-display`), and the row shows the log line. Loki and Alloy stay in a collapsed section at the bottom. Lines remain after the Pod that wrote them is replaced.
 
 ## Install
 
-`scripts/up.sh` is the install. It creates the cluster, builds the images, installs the gateway, the Qt display, InfluxDB, the telemetry bridge, and Grafana, and waits until the temperature simulator is publishing.
+`scripts/up.sh` is the install. It creates the cluster, builds the images, installs the gateway, the Qt display, InfluxDB, the telemetry bridge, Loki, Alloy, and Grafana, and waits until the temperature simulator is publishing.
 
 Open Gateway is the git submodule `external/open-gateway`, pinned to commit `1e92a1a` until a release tag exists. The submodule URL is the local Open Gateway checkout, because that repository has no published remote yet. The cluster runs the cloud profile, which leaves the admin listener off. The cloud profile file leaves every simulator inactive, so each gateway Pod turns the temperature simulator on when it starts. A Pod created by a restart, a scale-up, or a rolling update does the same. The image's local profile turns the admin listener on, so the cloud profile is the one that matches this platform.
 

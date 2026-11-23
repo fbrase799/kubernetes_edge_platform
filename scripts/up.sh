@@ -11,6 +11,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 "${ROOT}/scripts/install-influxdb.sh"
 "${ROOT}/scripts/build-bridge.sh"
 "${ROOT}/scripts/install-bridge.sh"
+"${ROOT}/scripts/install-loki.sh"
+"${ROOT}/scripts/install-alloy.sh"
 "${ROOT}/scripts/install-grafana.sh"
 
 echo "cluster ${CLUSTER_NAME} is in service"

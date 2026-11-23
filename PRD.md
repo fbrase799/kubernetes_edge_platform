@@ -23,6 +23,7 @@ The platform must demonstrate:
 7. A configured Service and a working URL for Grafana, and a configured Service and URL for the Qt display.
 8. InfluxDB measurements that survive a Pod restart.
 9. Pod recovery, scaling, and a rolling update.
+10. Cluster logs visible in Grafana, so the behaviour of a scenario can be checked there, including a scenario added later.
 
 This is a hands-on infrastructure prototype. It is not a production edge product, a rewrite of Open Gateway, or a managed-cloud cluster.
 
@@ -44,11 +45,12 @@ These choices are fixed so implementation does not reopen them.
 | Qt display | Its own one-replica Deployment, `OGW_UI=novnc`. A Pod is not given the Mac’s X11 or Wayland session. The Qt process keeps `QT_QPA_PLATFORM=xcb` and draws on the X11 server the display image starts inside the Pod (Xvfb, 1280×720). noVNC publishes that window |
 | InfluxDB | InfluxDB OSS 2.x from the upstream Helm chart, with a PersistentVolumeClaim |
 | Grafana | Upstream Helm chart, NodePort published on the host by the k3d config |
+| Cluster logs | Grafana Loki, upstream Helm chart, single binary, with a PersistentVolumeClaim. Grafana Alloy runs as a DaemonSet and ships stdout and stderr from every container in the cluster. Streams are labeled with namespace, Pod, and container |
 | Sensor path into InfluxDB | A small bridge in this repository. It polls the gateway API and writes InfluxDB |
 | Bridge deployment | Helm chart owned by this repository |
 | Storage class | k3s local-path, which is already part of k3s |
 | Ingress controller | Not required for the first version. Grafana is reached through a NodePort |
-| Cluster monitoring stack | Not in the first version. Monitoring here means the Grafana dashboards of stored measurements, plus Kubernetes probes and rollout status |
+| Cluster monitoring stack | Container logs in Grafana through Loki. Sensor measurements stay in InfluxDB. Kubernetes probes and rollout status stay as they are. No Prometheus metrics stack |
 
 Open Gateway keeps its own process history only. This platform does not modify the gateway to write to InfluxDB. The bridge is the integration.
 
@@ -71,6 +73,8 @@ Mac
                       ├── open-gateway-display  Deployment + Service   (manifests)
                       ├── telemetry-bridge      Deployment             (Helm)
                       ├── influxdb              Stateful workload + PVC (upstream Helm)
+                      ├── loki                  Single binary + PVC    (upstream Helm)
+                      ├── alloy                 DaemonSet              (upstream Helm)
                       └── grafana               Deployment + Service   (upstream Helm)
 ```
 
@@ -92,6 +96,17 @@ InfluxDB  (PVC)
         │
         ▼
 Grafana   http://127.0.0.1:30080
+
+container stdout and stderr
+        │
+        ▼
+Grafana Alloy
+        │
+        ▼
+Loki  (PVC)
+        │
+        ▼
+Grafana   http://127.0.0.1:30080
 ```
 
 The gateway Service is ClusterIP. The display Pod and the bridge reach it by DNS inside the cluster. A localhost port for the gateway health endpoint is published only so the demo can show the API without using `kubectl port-forward` as the primary path. The display Service is a NodePort, published on the host as port 6080.
@@ -108,6 +123,7 @@ Steady state is one gateway Pod and one bridge Pod. Scaling the gateway is a dem
 - Bridge from the gateway's current-telemetry API to InfluxDB.
 - InfluxDB with a persistent volume.
 - Grafana with a provisioned InfluxDB datasource and one sensor dashboard.
+- Cluster container logs shipped to Loki and shown in Grafana, still queryable after the Pod that wrote them is gone.
 - Documented drills for Pod recovery, scaling, rolling update, and volume survival.
 
 ### 4.2 Out of scope
@@ -119,7 +135,7 @@ Steady state is one gateway Pod and one bridge Pod. Scaling the gateway is a dem
 - A React client, or a second dashboard beside the Qt screen and Grafana.
 - Attaching the display Pod to the developer machine’s XQuartz, WSLg, or Wayland socket. The Qt app has no Wayland mode. Desktop mode in Open Gateway expects a host X11 server, which a k3d Pod does not have.
 - Real CAN or other physical sensors. The simulator is the sensor for this platform.
-- GitOps, service mesh, operators, and a Prometheus stack.
+- GitOps, service mesh, operators, and a Prometheus metrics stack.
 - Authentication beyond the demo tokens stored as Kubernetes Secrets.
 - Building or publishing a tagged Open Gateway release. Until that tag exists, the submodule pin is the integration.
 
@@ -231,6 +247,18 @@ No dashboard is clicked together by hand in the UI. A reinstall recreates the sa
 
 **Acceptance:** A browser opened at `http://127.0.0.1:30080` shows Grafana, the datasource is healthy, and the dashboard shows the simulator series after the bridge has been running.
 
+### FR-12 — Cluster logs in Grafana
+
+Logs from the cluster are visible in the same Grafana used for sensor measurements. A scenario is checked by reading the lines the workloads wrote. A scenario added later uses the same pipeline and the same dashboard.
+
+Grafana Loki is installed with its upstream Helm chart into namespace `edge`, as a single binary, with a PersistentVolumeClaim on local-path. Grafana Alloy runs as a DaemonSet and ships stdout and stderr from every container in the cluster to Loki. Each stream carries the namespace, Pod, and container.
+
+The Grafana chart provisions a Loki datasource and one logs dashboard. The dashboard shows recent lines and filters by namespace and Pod. It is provisioned from the chart, the same way as the sensor dashboard. `scripts/up.sh` installs Loki and Alloy with the rest of the stack.
+
+Lines already shipped stay in Loki after the Pod that wrote them is deleted.
+
+**Acceptance:** At `http://127.0.0.1:30080` the Loki datasource is healthy and the logs dashboard shows lines from more than one workload. After the gateway Pod is deleted and a replacement is Ready, the deleted Pod's lines are still on that dashboard.
+
 ## 8. Operate and recover
 
 These drills are scripts under `scripts/`, executed inside the toolchain container against the running cluster. The README records the commands and the expected outcome. The scripts are the demonstration, not a test framework.
@@ -266,8 +294,8 @@ The first version is done when all of the following are true on a machine that h
 1. The toolchain container starts, and `k3d cluster create --config infra/cluster/k3d.yaml` creates a 3-node cluster.
 2. Manifests deploy Open Gateway from the submodule, and the simulator is visible on the API.
 3. Manifests deploy the Qt display with `OGW_UI=novnc`, and `http://127.0.0.1:6080/vnc.html?autoconnect=1&resize=scale` shows the 1280×720 window.
-4. Helm installs InfluxDB, the telemetry bridge, and Grafana.
-5. Grafana at `http://127.0.0.1:30080` shows the sensor series.
+4. Helm installs InfluxDB, the telemetry bridge, Loki, Alloy, and Grafana.
+5. Grafana at `http://127.0.0.1:30080` shows the sensor series and the cluster logs. Lines from a deleted gateway Pod are still queryable.
 6. Deleting the InfluxDB Pod does not drop the earlier measurements.
 7. The recovery, scale, and rollout scripts complete as written in FR-08, FR-09, and FR-10.
 8. `k3d cluster delete` removes the cluster.

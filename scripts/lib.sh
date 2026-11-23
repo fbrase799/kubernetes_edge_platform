@@ -12,6 +12,8 @@ export DEMO_BUCKET="sensors"
 export DEMO_TOKEN="edge-demo-token"
 export INFLUX_CHART_VERSION="${INFLUX_CHART_VERSION:-2.1.2}"
 export GRAFANA_CHART_VERSION="${GRAFANA_CHART_VERSION:-10.5.15}"
+export LOKI_CHART_VERSION="${LOKI_CHART_VERSION:-6.55.0}"
+export ALLOY_CHART_VERSION="${ALLOY_CHART_VERSION:-1.16.0}"
 
 cluster_exists() {
     k3d cluster list | awk 'NR > 1 { print $1 }' | grep -qx "${CLUSTER_NAME}"

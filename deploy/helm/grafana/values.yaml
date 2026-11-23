@@ -30,6 +30,12 @@ datasources:
           defaultBucket: sensors
         secureJsonData:
           token: edge-demo-token
+      - name: Loki
+        uid: loki
+        type: loki
+        access: proxy
+        url: http://loki.edge.svc.cluster.local:3100
+        isDefault: false
 dashboardProviders:
   dashboardproviders.yaml:
     apiVersion: 1
@@ -47,3 +53,6 @@ dashboards:
     sensors:
       json: |
         {"annotations":{"list":[]},"editable":false,"graphTooltip":1,"panels":[{"datasource":{"type":"influxdb","uid":"influxdb"},"fieldConfig":{"defaults":{"unit":"short","custom":{"drawStyle":"line","showPoints":"always"}},"overrides":[]},"gridPos":{"h":12,"w":24,"x":0,"y":0},"id":1,"options":{"legend":{"displayMode":"table","placement":"bottom","showLegend":true,"calcs":[]},"tooltip":{"mode":"multi","sort":"desc"}},"targets":[{"datasource":{"type":"influxdb","uid":"influxdb"},"query":"from(bucket: \"sensors\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"sensor\" and r._field == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)","refId":"A"}],"title":"Sensor values","type":"timeseries"}],"refresh":"5s","schemaVersion":39,"tags":["edge"],"templating":{"list":[]},"time":{"from":"now-15m","to":"now"},"timezone":"browser","title":"Edge sensors","uid":"edge-sensors","version":1}
+    logs:
+      json: |
+        {"annotations":{"list":[]},"editable":false,"panels":[{"datasource":{"type":"loki","uid":"loki"},"gridPos":{"h":18,"w":24,"x":0,"y":0},"id":1,"options":{"dedupStrategy":"none","enableLogDetails":true,"prettifyLogMessage":true,"showCommonLabels":false,"showLabels":false,"showTime":true,"sortOrder":"Descending","wrapLogMessage":true},"targets":[{"datasource":{"type":"loki","uid":"loki"},"expr":"{namespace=~\"$namespace\",pod=~\"${workload:raw}\",container!~\"loki|alloy\"}","refId":"A"}],"title":"Workload logs","type":"logs"},{"collapsed":true,"gridPos":{"h":1,"w":24,"x":0,"y":18},"id":2,"panels":[{"datasource":{"type":"loki","uid":"loki"},"gridPos":{"h":12,"w":24,"x":0,"y":19},"id":3,"options":{"dedupStrategy":"none","enableLogDetails":true,"showCommonLabels":false,"showLabels":false,"showTime":true,"sortOrder":"Descending","wrapLogMessage":true},"targets":[{"datasource":{"type":"loki","uid":"loki"},"expr":"{namespace=~\"$namespace\",container=~\"loki|alloy\"}","refId":"A"}],"title":"Loki and Alloy","type":"logs"}],"title":"Loki and Alloy","type":"row"}],"refresh":"5s","schemaVersion":39,"tags":["edge"],"templating":{"list":[{"allValue":".+","current":{"selected":true,"text":"edge","value":"edge"},"datasource":{"type":"loki","uid":"loki"},"definition":"label_values(namespace)","includeAll":true,"label":"Namespace","name":"namespace","query":"label_values(namespace)","refresh":2,"type":"query"},{"allValue":".+","current":{"selected":true,"text":"open-gateway","value":"open-gateway-[0-9a-f]+-.+"},"includeAll":true,"label":"Workload","name":"workload","options":[{"selected":true,"text":"open-gateway","value":"open-gateway-[0-9a-f]+-.+"},{"selected":false,"text":"open-gateway-display","value":"open-gateway-display-.+"},{"selected":false,"text":"telemetry-bridge","value":"telemetry-bridge-.+"},{"selected":false,"text":"influxdb","value":"influxdb-.+"},{"selected":false,"text":"grafana","value":"grafana-.+"}],"query":"open-gateway : open-gateway-[0-9a-f]+-.+, open-gateway-display : open-gateway-display-.+, telemetry-bridge : telemetry-bridge-.+, influxdb : influxdb-.+, grafana : grafana-.+","type":"custom"}]},"time":{"from":"now-6h","to":"now"},"timezone":"browser","title":"Edge logs","uid":"edge-logs","version":7}
